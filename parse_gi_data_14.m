@@ -1,4 +1,4 @@
-function parse_gi_data(ID, str)
+function parse_gi_data_14(ID, str)
 % parse GI recordings into a nice format and save
 % variable input string determines input data: S: standard trials, C: hex, atropine, L: lidocaine
 
@@ -58,7 +58,7 @@ for i = 1:3
 end
 
 SAVEFILE = 'data/giData.mat';
-WINDOW_DURATION = 10; % seconds
+WINDOW_DURATION = 1/14; % seconds - 1/14Hz - 71 milliseconds
 BASELINE_TIME = 30; % minutes
 CONDITION_TIME = 15; % minutes
 % After baseline, 15 min stim on, followd by 15 min off. On-off
@@ -73,7 +73,7 @@ for f = 1:numel(LOAD_FOLDER)
   segmentsProcessed = numel(rawData);
   nProcessed = 0;
   initLoopVars = true;
-  K = length(folderContents);
+  K = min([length(folderContents) 60]);
   for k = 1:K
     filename = folderContents(k).name;
     segmentIdx = segmentsProcessed + k;
@@ -110,14 +110,21 @@ for f = 1:numel(LOAD_FOLDER)
     end
     
     % segment into time windows
+    
     [C,nSamples] = size(thisData);
-    N = labels.fsRaw * labels.windowLength;
+    N = floor(labels.fsRaw * labels.windowLength);
     W = floor(nSamples ./ N);
     rawData{segmentIdx} = thisData';
-    
+
     % add window start & end points to labels
-    windowStarts = 1 : N : (W-1) * N + 1;
-    windowEnds = N : N : W * N;
+    %start = floor(linspace(1 + offset,nSamples,(nSamples / labels.fsRaw)*14));
+    start = findpulse(thisData);
+
+    if isempty(start), continue, end
+
+    windowStarts = start(1:end-1);
+    windowEnds = windowStarts + N;% N : N : W * N;
+    %offset = N - (nSamples - windowEnds(end));
     rawWindowTimes{segmentIdx} = [windowStarts; windowEnds];
     
     % add condition to labels

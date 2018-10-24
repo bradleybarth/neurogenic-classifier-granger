@@ -73,6 +73,8 @@ for d = 1:nSegments
 
   % 60Hz notch filters (+harmonics)
   xNotchFiltered = double(thisData);
+  xNotchFiltered = xNotchFiltered - mean(xNotchFiltered);
+  %{
   for f = 60:60:dataOpts.highFreq
     Wp = [(f-1) (f+1)]*2/fs; % passband
     Ws = [(f-0.25) (f+0.25)]*2/fs; % stopband
@@ -98,17 +100,11 @@ for d = 1:nSegments
         xNotchFiltered = filtfilt(sos,g,xNotchFiltered);
       end
   end
-  
+  %}
   % subsample (using custom function based off 'decimate')
-  xSubsampled = decimateiir(xNotchFiltered,dataOpts.subSampFact);
+  %xSubsampled = decimateiir(xNotchFiltered,dataOpts.subSampFact);
   windowTimes{d} = ceil(rawWindowTimes{d} ./ dataOpts.subSampFact);
-                                  
-  if strcmp(dataOpts.normalize, 'segments')
-    dataSegments{d} = zscore(xSubsampled);
-  elseif ~strcmp(dataOpts.normalize, 'none')
-    warning(['Value in dataOpts.normalize not recognized:'...
-      'Data will not be normalized'])
-  end
+  dataSegments{d} = xNotchFiltered;
 end
 
 % update labels

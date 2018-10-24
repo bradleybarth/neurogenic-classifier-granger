@@ -38,7 +38,7 @@ f = sfreqs(fres, fs);
 %%%% Modified section below
 %%%% Don't want all possible combinations of channels - only want rows and
 %%%% columns (directional pairs) with order specificity
-CHANS = [4 6 8 9 10 11 12 13 14 15 18 19 20 21 22 23 24 25 26 28 29 30];
+CHANS = [4 5 6 8 9 10 11 12 13 14 15 18 19 20 21 22 23 24 25 26 28 29 30];
 % rows = {[28, 19, 17, 15, 13, 4], [24, 22, 20, 12, 10, 8],...
 %     [29, 27, 18, 14, 5, 3], [25, 23, 21, 11, 9, 7]};
 % cols = {[28, 29], [24, 25], [22, 23], [19, 20, 21], [17, 18],...
@@ -63,14 +63,22 @@ end
 permutations = [];
 for r = 1:length(rows)
     pairs = nchoosek(rows{r},2);
-    permutations(size(permutations,1)+[1:size(pairs,1)*2],:) = [pairs; pairs(:,2) pairs(:,1)];
+    %permutations(size(permutations,1)+[1:size(pairs,1)*2],:) = [pairs; pairs(:,2) pairs(:,1)];
+    permutations(size(permutations,1)+[1:size(pairs,1)],:) = pairs;
     clear pairs
 end
+permutations(size(permutations,1)+[1:size(permutations,1)],:) =...
+    [permutations(:,2) permutations(:,1)];
+rowstop = size(permutations,1);
 for c = 1:length(cols)
     pairs = nchoosek(cols{c},2);
-    permutations(size(permutations,1)+[1:size(pairs,1)*2],:) = [pairs; pairs(:,2) pairs(:,1)];
+    %permutations(size(permutations,1)+[1:size(pairs,1)*2],:) = [pairs; pairs(:,2) pairs(:,1)];
+    permutations(size(permutations,1)+[1:size(pairs,1)],:) = pairs;
     clear pairs
 end
+permutations(size(permutations,1)+[1:size(permutations(rowstop+1:end,:),1)],:) =...
+    [permutations(rowstop+1:end, 2) permutations(rowstop+1:end, 1)];
+
 
 if separateWindows
 % loop over each window seperately
